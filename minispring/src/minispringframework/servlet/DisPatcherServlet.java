@@ -76,20 +76,18 @@ public class DisPatcherServlet {
             } catch (Exception e) {
                 e.printStackTrace();
                 response.setStatus(500, "Internal Server Error");
-                response.write("An error occurred: " + e.getMessage());
+                response.write("500 Internal Server Error");
             }
         } else {
             response.setStatus(404, "Not Found");
-            response.write("404 Not Found: " + path);
+            response.write("404 Not Found");
         }
     }
 
     private void handleResult(HttpResponse response, Object result) {
         if (result instanceof String) {
-            System.out.println("result with string");
             response.write((String) result);
         } else {
-            System.out.println("result without string");
             response.write(result.toString());
         }
     }
