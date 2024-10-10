@@ -59,7 +59,7 @@ public class DisPatcherServlet {
             if (method.isAnnotationPresent(RequestMapping.class)) {
                 RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
                 String url = baseUrl + requestMapping.value();
-                controllerMap.put(url, method);
+                handlerMap.put(url, method);
             }
         }
     }
@@ -71,7 +71,7 @@ public class DisPatcherServlet {
         if (handler != null) {
             try {
                 Object controller = controllerMap.get(path.substring(0, path.lastIndexOf("/")));
-                Object result = handler.invoke(controller, request, response);
+                Object result = handler.invoke(controller);
                 handleResult(response, result);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -86,8 +86,10 @@ public class DisPatcherServlet {
 
     private void handleResult(HttpResponse response, Object result) {
         if (result instanceof String) {
+            System.out.println("result with string");
             response.write((String) result);
         } else {
+            System.out.println("result without string");
             response.write(result.toString());
         }
     }
