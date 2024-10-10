@@ -14,13 +14,8 @@ public class ClassPathScanner {
     public List<Class<?>> scanPackage(String basePackage) throws IOException, ClassNotFoundException {
         List<Class<?>> classes = new ArrayList<>();
         String path = basePackage.replace(".", "/");
-        // ClassLoader은 JVM의 구성요소 중 하나로, .class 바이트 코드를 읽어 class 객체를 생성하는 역할을 한다.
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         Enumeration<URL> resources = classLoader.getResources(path);
-
-        if (!resources.hasMoreElements()) {
-            System.out.println("No resources found for path: " + path);
-        }
 
         while (resources.hasMoreElements()) {
             URL resource = resources.nextElement();

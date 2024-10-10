@@ -1,5 +1,6 @@
 package minispringframework.servlet;
 
+import minispringframework.annotation.Controller;
 import minispringframework.annotation.RequestMapping;
 import minispringframework.parser.HttpRequest;
 import minispringframework.parser.HttpResponse;
@@ -30,9 +31,9 @@ public class DisPatcherServlet {
     private void scanController() {
         // classPath 을 스캔하여 컨트롤러를 등록
         try {
-            List<Class<?>> clazz = scanner.scanPackage("out.production.minispring.project");
+            List<Class<?>> clazz = scanner.scanPackage("project");
             for (Class<?> controller : clazz) {
-                if (controller.isAnnotationPresent(minispringframework.annotation.Controller.class)) {
+                if (controller.isAnnotationPresent(Controller.class)) {
                     Object instance = controller.getDeclaredConstructor().newInstance();
                     RequestMapping requestMapping = controller.getAnnotation(RequestMapping.class);
                     String baseUrl = requestMapping.value();
