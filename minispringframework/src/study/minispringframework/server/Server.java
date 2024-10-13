@@ -14,10 +14,13 @@ import java.util.concurrent.ExecutorService;
 public class Server {
     private int port;
     private ExecutorService executorService;
+    private DisPatcherServlet disPatcherServlet;
 
-    public Server(int port, ExecutorService executorService) {
+    public Server(int port, ExecutorService executorService, String basePackage) {
         this.port = port;
         this.executorService = executorService;
+        this.disPatcherServlet = new DisPatcherServlet();
+        this.disPatcherServlet.init(basePackage);
     }
 
     public void start() {
@@ -37,6 +40,7 @@ public class Server {
         try {
             HttpRequest request = HttpRequest.parse(clientSocket.getInputStream());
             HttpResponse response = new HttpResponse(clientSocket.getOutputStream());
+            disPatcherServlet.service(request, response);
 
             response.send();
         } catch (IOException e) {

@@ -3,11 +3,13 @@ package study.minispringframework.servlet;
 import study.minispringframework.annotation.Component;
 import study.minispringframework.annotation.Controller;
 import study.minispringframework.annotation.RequestMapping;
+import study.minispringframework.ioc.MiniIoCContainer;
 import study.minispringframework.parser.HttpRequest;
 import study.minispringframework.parser.HttpResponse;
 import study.minispringframework.scanner.ClassPathScanner;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -26,17 +28,17 @@ public class DisPatcherServlet {
         this.scanner = new ClassPathScanner();
     }
 
-    public void init() {
-        scanController();
+    public void init(String basePackage) {
+        scanController(basePackage);
     }
 
-    private void scanController() {
+    private void scanController(String basePackage) {
         // classPath 을 스캔하여 컨트롤러를 등록
         try {
-            List<Class<?>> clazz = scanner.scanPackage("");
+            List<Class<?>> clazz = scanner.scanPackage(basePackage);
             for (Class<?> controller : clazz) {
                 if (controller.isAnnotationPresent(Controller.class)) {
-                    Object instance = controller.getDeclaredConstructor().newInstance();
+                    Object instance = getClassWithParameter(controller);
                     RequestMapping requestMapping = controller.getAnnotation(RequestMapping.class);
                     String baseUrl = requestMapping.value();
                     registerController(baseUrl, instance);
@@ -50,9 +52,28 @@ public class DisPatcherServlet {
             throw new RuntimeException(e);
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
         }
+    }
+
+    private Object getClassWithParameter(Class<?> controller) throws InvocationTargetException, InstantiationException, IllegalAccessException {
+        MiniIoCContainer container = MiniIoCContainer.getInstance();
+        Constructor<?>[] constructors = controller.getConstructors();
+
+        for (Constructor<?> constructor : constructors) {
+            if (constructor.getParameterCount() == 0) {
+                return constructor.newInstance();
+            } else {
+                Class<?>[] parameterTypes = constructor.getParameterTypes();
+                Object[] parameters = new Object[parameterTypes.length];
+                for (int i = 0; i < parameterTypes.length; i++) {
+                    parameters[i] = container.getBean(parameterTypes[i].getName());
+                }
+
+                return constructor.newInstance(parameters);
+            }
+        }
+
+        return null;
     }
 
     private void registerController(String baseUrl, Object controller) {

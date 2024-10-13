@@ -12,7 +12,7 @@ public class MiniSpringApplication {
         MiniIoCContainer container = MiniIoCContainer.getInstance();
         String basePackage = source.getPackage().getName();
         container.setUpBean(basePackage);
-//        Server server = new Server(8080, Executors.newFixedThreadPool(10));
-//        server.start();
+        Server server = new Server(8080, Executors.newFixedThreadPool(10), basePackage);
+        server.start();
     }
 }

@@ -3,7 +3,9 @@ package study.minispringframework.ioc;
 import study.minispringframework.annotation.Component;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +13,6 @@ import java.util.Map;
 // 싱글톤 패턴 사용(컨테이너에서 생성한 인스턴스를 전역적으로 단 1개만 사용 -> 메모리 효율 증가)
 public class MiniIoCContainer {
     private static MiniIoCContainer miniIoCContainer;
-    private final String INTERNAL_BEAN_PACKAGE = "study.minispringframework";
 
     private Map<String, Object> beanMap = new HashMap<>();
 
@@ -24,27 +25,11 @@ public class MiniIoCContainer {
 
     public void setUpBean(String basePackage) {
         try {
-            registerInternalBeans(INTERNAL_BEAN_PACKAGE);
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
             String path = basePackage.replace(".", "/");
             URL resource = classLoader.getResource(path);
             File directory = new File(resource.getFile());
             scanDirectory(directory, basePackage);
-
-            for (Map.Entry<String, Object> entry : beanMap.entrySet()) {
-                System.out.println(entry.getKey() + " : " + entry.getValue());
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void registerInternalBeans(String internalBeanPackage) {
-        try {
-            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            URL resource = classLoader.getResource(internalBeanPackage.replace(".", "/"));
-            File directory = new File(resource.getFile());
-            scanDirectory(directory, internalBeanPackage);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -69,9 +54,9 @@ public class MiniIoCContainer {
     private void createBeanFromClass(String className) {
         try {
             Class<?> clazz = Class.forName(className);
-            if (clazz.isAnnotationPresent(Component.class) && isInstable(clazz)) {
-                Constructor<?> constructor = clazz.getDeclaredConstructor();
-                Object instance = constructor.newInstance();
+            System.out.println("className = " + className);
+            if (hasAnnotation(clazz, Component.class) && isInstantiable(clazz)) {
+                Object instance = getClassWithParameter(clazz);
                 String beanName = getBeanName(clazz);
                 beanMap.put(beanName, instance);
             }
@@ -91,7 +76,42 @@ public class MiniIoCContainer {
         return beanName;
     }
 
-    private boolean isInstable(Class<?> clazz) {
+    private boolean isInstantiable(Class<?> clazz) {
         return !clazz.isInterface() && !clazz.isEnum() && !clazz.isAnnotation();
+    }
+
+    private boolean hasAnnotation(Class<?> clazz, Class<? extends Annotation> target) {
+        if (clazz.isAnnotationPresent(target)) {
+            return true;
+        }
+
+        Annotation[] annotations = clazz.getAnnotations();
+        for (Annotation annotation : annotations) {
+            if (annotation.annotationType().isAnnotationPresent(target)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Object getClassWithParameter(Class<?> controller) throws InvocationTargetException, InstantiationException, IllegalAccessException {
+        MiniIoCContainer container = MiniIoCContainer.getInstance();
+        Constructor<?>[] constructors = controller.getConstructors();
+
+        for (Constructor<?> constructor : constructors) {
+            if (constructor.getParameterCount() == 0) {
+                return constructor.newInstance();
+            } else {
+                Class<?>[] parameterTypes = constructor.getParameterTypes();
+                Object[] parameters = new Object[parameterTypes.length];
+                for (int i = 0; i < parameterTypes.length; i++) {
+                    parameters[i] = container.getBean(parameterTypes[i].getName());
+                }
+
+                return constructor.newInstance(parameters);
+            }
+        }
+
+        return null;
     }
 }
