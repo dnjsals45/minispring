@@ -1,7 +1,7 @@
-package project;
+package study.project.controller;
 
-import minispringframework.annotation.Controller;
-import minispringframework.annotation.RequestMapping;
+import study.minispringframework.annotation.Controller;
+import study.minispringframework.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/hello")

@@ -1,10 +1,13 @@
-package minispringframework.parser;
+package study.minispringframework.parser;
+
+import study.minispringframework.annotation.Component;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
+@Component
 public class HttpResponse {
     private int statusCode;
     private String statusMessage;

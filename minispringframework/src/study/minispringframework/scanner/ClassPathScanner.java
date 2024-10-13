@@ -1,6 +1,7 @@
-package minispringframework.scanner;
+package study.minispringframework.scanner;
 
-import minispringframework.annotation.Controller;
+import study.minispringframework.annotation.Component;
+import study.minispringframework.annotation.Controller;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+@Component
 public class ClassPathScanner {
 
     public List<Class<?>> scanPackage(String basePackage) throws IOException, ClassNotFoundException {

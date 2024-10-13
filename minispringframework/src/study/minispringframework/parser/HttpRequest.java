@@ -1,4 +1,6 @@
-package minispringframework.parser;
+package study.minispringframework.parser;
+
+import study.minispringframework.annotation.Component;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -7,6 +9,7 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
+@Component
 public class HttpRequest {
     private String method;
     private String path;

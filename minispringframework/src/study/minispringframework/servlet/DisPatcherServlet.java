@@ -1,10 +1,11 @@
-package minispringframework.servlet;
+package study.minispringframework.servlet;
 
-import minispringframework.annotation.Controller;
-import minispringframework.annotation.RequestMapping;
-import minispringframework.parser.HttpRequest;
-import minispringframework.parser.HttpResponse;
-import minispringframework.scanner.ClassPathScanner;
+import study.minispringframework.annotation.Component;
+import study.minispringframework.annotation.Controller;
+import study.minispringframework.annotation.RequestMapping;
+import study.minispringframework.parser.HttpRequest;
+import study.minispringframework.parser.HttpResponse;
+import study.minispringframework.scanner.ClassPathScanner;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Component
 public class DisPatcherServlet {
     private Map<String, Object> controllerMap;
     private Map<String, Method> handlerMap;
@@ -31,7 +33,7 @@ public class DisPatcherServlet {
     private void scanController() {
         // classPath 을 스캔하여 컨트롤러를 등록
         try {
-            List<Class<?>> clazz = scanner.scanPackage("project");
+            List<Class<?>> clazz = scanner.scanPackage("");
             for (Class<?> controller : clazz) {
                 if (controller.isAnnotationPresent(Controller.class)) {
                     Object instance = controller.getDeclaredConstructor().newInstance();
