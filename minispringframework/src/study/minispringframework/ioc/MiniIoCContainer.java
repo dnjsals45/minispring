@@ -6,6 +6,7 @@ import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,7 +55,6 @@ public class MiniIoCContainer {
     private void createBeanFromClass(String className) {
         try {
             Class<?> clazz = Class.forName(className);
-            System.out.println("className = " + className);
             if (hasAnnotation(clazz, Component.class) && isInstantiable(clazz)) {
                 Object instance = getClassWithParameter(clazz);
                 String beanName = getBeanName(clazz);
@@ -66,14 +66,40 @@ public class MiniIoCContainer {
     }
 
     private String getBeanName(Class<?> clazz) {
-        Component component = clazz.getAnnotation(Component.class);
-        String beanName = component.value();
+        String beanName = "";
+
+        for (Annotation annotation : clazz.getAnnotations()) {
+            if (annotation instanceof Component) {
+                beanName = ((Component) annotation).value();
+            } else {
+                beanName = getValueFromMetaAnnotation(annotation);
+            }
+
+            if (!beanName.isEmpty()) {
+                break;
+            }
+        }
+
         if (beanName.isEmpty()) {
             beanName = clazz.getSimpleName();
             beanName = Character.toLowerCase(beanName.charAt(0)) + beanName.substring(1);
         }
 
         return beanName;
+    }
+
+    private String getValueFromMetaAnnotation(Annotation annotation) {
+        Class<? extends Annotation> annotationType = annotation.annotationType();
+        if (annotationType.isAnnotationPresent(Component.class)) {
+            try {
+                Method valueMethod = annotationType.getDeclaredMethod("value");
+                return (String) valueMethod.invoke(annotation);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return "";
     }
 
     private boolean isInstantiable(Class<?> clazz) {
