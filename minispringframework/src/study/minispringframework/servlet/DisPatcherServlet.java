@@ -3,6 +3,7 @@ package study.minispringframework.servlet;
 import study.minispringframework.annotation.Component;
 import study.minispringframework.annotation.Controller;
 import study.minispringframework.annotation.RequestMapping;
+import study.minispringframework.bean.BeanFactory;
 import study.minispringframework.ioc.MiniIoCContainer;
 import study.minispringframework.parser.HttpRequest;
 import study.minispringframework.parser.HttpResponse;
@@ -57,7 +58,6 @@ public class DisPatcherServlet {
     }
 
     private Object getClassWithParameter(Class<?> controller) throws InvocationTargetException, InstantiationException, IllegalAccessException {
-        MiniIoCContainer container = MiniIoCContainer.getInstance();
         Constructor<?>[] constructors = controller.getConstructors();
 
         for (Constructor<?> constructor : constructors) {
@@ -67,7 +67,9 @@ public class DisPatcherServlet {
                 Class<?>[] parameterTypes = constructor.getParameterTypes();
                 Object[] parameters = new Object[parameterTypes.length];
                 for (int i = 0; i < parameterTypes.length; i++) {
-                    parameters[i] = container.getBean(parameterTypes[i].getName());
+                    String beanName = parameterTypes[i].getSimpleName();
+                    beanName = Character.toLowerCase(beanName.charAt(0)) + beanName.substring(1);
+                    parameters[i] = BeanFactory.getInstance().getBean(beanName);
                 }
 
                 return constructor.newInstance(parameters);
